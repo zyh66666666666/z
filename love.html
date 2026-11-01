@@ -1,0 +1,389 @@
+<html lang="zh-CN">
+<head><!DOCTYPE html>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>-- 爱你的梦里北极光 --</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:100%;height:100vh;overflow:hidden;font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:linear-gradient(135deg,#0c0c1d 0%,#1a0a2e 50%,#2d1b69 100%);color:#fff}
+
+/* ===== 星空 ===== */
+#stars{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--dur) ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+
+/* ===== 花瓣 ===== */
+#petals{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:hidden}
+.petal{position:absolute;top:-15px;width:10px;height:10px;background:radial-gradient(ellipse at center,#ff69b4 0%,#ff1493 100%);border-radius:50% 0 50% 50%;opacity:0.6;animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg) translateX(0);opacity:0.7}25%{transform:translateY(25vh) rotate(180deg) translateX(30px)}50%{transform:translateY(50vh) rotate(360deg) translateX(-20px)}75%{transform:translateY(75vh) rotate(540deg) translateX(25px)}100%{transform:translateY(105vh) rotate(720deg) translateX(0);opacity:0}}
+
+/* ===== 爱心树Canvas ===== */
+#heart-tree{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;opacity:0;transition:opacity 2s}
+#heart-tree.active{opacity:1}
+
+/* ===== 初始爱心按钮（无文字提示） ===== */
+#heart-start{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:50;cursor:pointer}
+#heart-start svg{width:100px;height:100px;fill:#ff1493;filter:drop-shadow(0 0 25px rgba(255,20,147,0.8));animation:heartbeat 1.5s ease-in-out infinite;transition:all 0.8s}
+#heart-start:hover svg{transform:scale(1.15);filter:drop-shadow(0 0 40px rgba(255,20,147,1))}
+@keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+
+/* ===== 主内容区（初始隐藏） ===== */
+#main-content{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 1.5s ease}
+#main-content.active{opacity:1;pointer-events:auto}
+
+/* 左侧照片轮播 */
+#left-panel{position:absolute;left:3%;top:50%;transform:translateY(-50%);width:24%;max-width:260px;opacity:0;transition:opacity 2s ease 0.3s}
+#left-panel.show{opacity:1}
+#photo-carousel{position:relative;width:100%;height:340px;border-radius:15px;overflow:hidden;box-shadow:0 0 35px rgba(255,105,180,0.5);border:2px solid rgba(255,182,213,0.6)}
+.photo-slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 1.5s ease-in-out;background-size:cover;background-position:center}
+.photo-slide.active{opacity:1}
+#carousel-dots{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,105,180,0.4);border:1px solid #ff69b4;cursor:pointer;transition:all 0.3s}
+.dot.active{background:#ff69b4;box-shadow:0 0 10px #ff69b4}
+
+/* 右侧祝福语 */
+#right-panel{position:absolute;right:3%;top:50%;transform:translateY(-50%);width:24%;max-width:260px;text-align:center;opacity:0;transition:opacity 2s ease 0.6s}
+#right-panel.show{opacity:1}
+.blessing-box{font-size:15px;line-height:2.4;color:#ffb6d9;text-shadow:0 0 12px rgba(255,105,180,0.6);animation:glow 3s ease-in-out infinite alternate}
+@keyframes glow{from{text-shadow:0 0 10px rgba(255,105,180,0.4)}to{text-shadow:0 0 25px rgba(255,105,180,0.9),0 0 50px rgba(255,20,147,0.5)}}
+
+/* 底部导航 */
+#nav-area{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:30px;z-index:30;opacity:0;transition:opacity 2s ease 1s}
+#nav-area.show{opacity:1}
+.nav-btn{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,182,213,0.5);color:#fff;font-size:20px;cursor:pointer;transition:all 0.3s;display:flex;justify-content:center;align-items:center;backdrop-filter:blur(5px)}
+.nav-btn:hover{background:rgba(255,105,180,0.4);border-color:#ff69b4;transform:scale(1.1)}
+
+/* 页码 */
+#page-num{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:13px;z-index:25;opacity:0;transition:opacity 2s ease 1.2s}
+#page-num.show{opacity:1}
+
+/* 署名 */
+#signature{position:fixed;bottom:15px;right:20px;color:rgba(255,182,213,0.4);font-size:12px;z-index:25;opacity:0;transition:opacity 2s ease 1.5s}
+#signature.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div id="stars"></div>
+
+<!-- 花瓣 -->
+<div id="petals"></div>
+
+<!-- 爱心树粒子 -->
+<canvas id="heart-tree"></canvas>
+
+<!-- 初始爱心（无文字提示） -->
+<div id="heart-start">
+  <svg viewBox="0 0 32 32"><path d="M16 28.6C16 28.6 2 18.3 2 9.5 2 5.4 5.4 2 9.5 2c2.4 0 4.6 1.1 6 2.8C16.9 3.1 19.1 2 21.5 2 25.6 2 29 5.4 29 9.5 29 18.3 16 28.6 16 28.6z"/></svg>
+</div>
+
+<!-- 主内容（点击爱心后显现） -->
+<div id="main-content">
+  <!-- 左侧照片轮播 -->
+  <div id="left-panel">
+    <div id="photo-carousel">
+      <div class="photo-slide active" style="background-image:url('photos/同学效果/photo1.jpg')"></div>
+      <div class="photo-slide" style="background-image:url('photos/同学效果/photo2.jpg')"></div>
+      <div class="photo-slide" style="background-image:url('photos/同学效果/photo3.jpg')"></div>
+      <div class="photo-slide" style="background-image:url('photos/同学效果/photo4.jpg')"></div>
+      <div class="photo-slide" style="background-image:url('photos/同学效果/photo5.jpg')"></div>
+    </div>
+    <div id="carousel-dots">
+      <div class="dot active" onclick="goToSlide(0)"></div>
+      <div class="dot" onclick="goToSlide(1)"></div>
+      <div class="dot" onclick="goToSlide(2)"></div>
+      <div class="dot" onclick="goToSlide(3)"></div>
+      <div class="dot" onclick="goToSlide(4)"></div>
+    </div>
+  </div>
+
+  <!-- 右侧祝福语 -->
+  <div id="right-panel">
+    <div class="blessing-box" id="blessing-text">
+      不管你能否看的到<br>但是我还是要把这些心里话说出来<br><br>
+      对的人，昨天太近，明天太远<br>选在今日，对你告白<br><br>
+      对你的依赖，如同鱼儿离不开海洋<br>如同植物离不开阳光<br><br>
+      给我一次机会，写满我们的幸福人生<br><br>
+      睁开我的眼睛，我的眼里只有你<br>闭上我的眼睛，我的眼里只有你<br><br>
+      带上眼镜，我的四个眼里只有你<br><br>
+      亲爱的，跟我走吧，我偷电动车养你<br><br>
+      套路都是我学的，但爱你是真的<br><br>
+      -- 爱你的梦里北极光 --
+    </div>
+  </div>
+</div>
+
+<!-- 底部导航 -->
+<div id="nav-area">
+  <div class="nav-btn" onclick="prevPage()">&#9664;</div>
+  <div class="nav-btn" onclick="nextPage()">&#9654;</div>
+</div>
+
+<!-- 页码 -->
+<div id="page-num">1 / 5</div>
+
+<!-- 署名 -->
+<div id="signature">-- 爱你的梦里北极光 --</div>
+
+<!-- 背景音乐 -->
+<audio id="bgm" loop preload="auto">
+  <source src="photos/bgm.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ===== 1. 星空 ===== */
+(function(){
+  var c=document.getElementById('stars');
+  for(var i=0;i<150;i++){
+    var s=document.createElement('div');
+    s.className='star';
+    var sz=Math.random()*3+1;
+    s.style.width=sz+'px';s.style.height=sz+'px';
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.setProperty('--dur',(Math.random()*3+2)+'s');
+    s.style.animationDelay=Math.random()*5+'s';
+    c.appendChild(s);
+  }
+})();
+
+/* ===== 2. 花瓣 ===== */
+(function(){
+  var c=document.getElementById('petals');
+  for(var i=0;i<20;i++){
+    var p=document.createElement('div');
+    p.className='petal';
+    p.style.left=Math.random()*100+'%';
+    p.style.animationDuration=(Math.random()*5+6)+'s';
+    p.style.animationDelay=Math.random()*8+'s';
+    var sz=Math.random()*6+6;
+    p.style.width=sz+'px';p.style.height=sz+'px';
+    c.appendChild(p);
+  }
+})();
+
+/* ===== 3. 爱心树粒子动画 ===== */
+(function(){
+  var canvas=document.getElementById('heart-tree');
+  var ctx=canvas.getContext('2d');
+  var W,H;
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+
+  function hX(t){return 16*Math.pow(Math.sin(t),3)}
+  function hY(t){return -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))}
+
+  var particles=[];
+  var count=2000;
+  var scale=Math.min(W,H)/350*20;
+  var cx=W/2,cy=H/2-20;
+  var startTime=Date.now();
+  var running=false;
+
+  for(var i=0;i<count;i++){
+    var t=Math.random()*Math.PI*2;
+    var hx=hX(t)*scale;
+    var hy=hY(t)*scale;
+    var r=Math.random();
+    var tx,ty;
+    if(r>0.3){
+      var offset=(Math.random()-0.5)*8*scale;
+      tx=cx+hx+offset;
+      ty=cy+hy+offset;
+    }else{
+      var sr=Math.random();
+      tx=cx+hx*sr;
+      ty=cy+hy*sr;
+    }
+    particles.push({
+      tx:tx,ty:ty,
+      x:Math.random()*W,y:Math.random()*H,
+      size:Math.random()*2.5+0.5,
+      hue:320+Math.random()*80,
+      opacity:Math.random()*0.5+0.5,
+      speed:Math.random()*0.015+0.008,
+      delay:Math.random()*1500,
+      pulseOff:Math.random()*Math.PI*2
+    });
+  }
+
+  function animate(){
+    if(!running)return;
+    ctx.clearRect(0,0,W,H);
+    var elapsed=Date.now()-startTime;
+    var beat1=Math.sin(elapsed/600)*0.06;
+    var beat2=Math.sin(elapsed/400+1)*0.03;
+    var pulse=1+beat1+beat2;
+
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      if(elapsed>p.delay){
+        p.x+=(p.tx-p.x)*p.speed;
+        p.y+=(p.ty-p.y)*p.speed;
+      }
+      var dx=p.x-cx,dy=p.y-cy;
+      var bx=cx+dx*pulse;
+      var by=cy+dy*pulse;
+      var wobbleX=Math.sin(elapsed/500+p.pulseOff)*1.5;
+      var wobbleY=Math.cos(elapsed/500+p.pulseOff)*1.5;
+      var sz=p.size*(1+Math.sin(elapsed/300+p.pulseOff)*0.15);
+      var hue=(p.hue+elapsed/50)%360;
+      ctx.beginPath();
+      ctx.arc(bx+wobbleX,by+wobbleY,Math.max(0.3,sz),0,Math.PI*2);
+      ctx.fillStyle='hsla('+hue+',100%,65%,'+p.opacity+')';
+      ctx.fill();
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  window.startHeartTree=function(){
+    running=true;
+    startTime=Date.now();
+    canvas.classList.add('active');
+  };
+  window.stopHeartTree=function(){
+    running=false;
+    canvas.classList.remove('active');
+    ctx.clearRect(0,0,W,H);
+  };
+})();
+
+/* ===== 4. 照片轮播 ===== */
+var currentSlide=0;
+var slides=document.querySelectorAll('.photo-slide');
+var dots=document.querySelectorAll('.dot');
+function goToSlide(n){
+  slides.forEach(function(s){s.classList.remove('active')});
+  dots.forEach(function(d){d.classList.remove('active')});
+  currentSlide=(n+slides.length)%slides.length;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+function nextSlide(){goToSlide(currentSlide+1)}
+setInterval(nextSlide,4000);
+
+/* ===== 5. 祝福语切换 ===== */
+var blessings=[
+  "不管你能否看的到<br>但是我还是要把这些心里话说出来<br><br>对的人，昨天太近，明天太远<br>选在今日，对你告白",
+  "对你的依赖，如同鱼儿离不开海洋<br>如同植物离不开阳光<br><br>给我一次机会<br>写满我们的幸福人生",
+  "睁开我的眼睛，我的眼里只有你<br>闭上我的眼睛，我的眼里只有你<br><br>带上眼镜，我的四个眼里只有你",
+  "亲爱的，跟我走吧<br>我偷电动车养你<br><br>套路都是我学的<br>但爱你是真的",
+  "-- 爱你的梦里北极光 --<br><br>谢谢你陪我走过的每一天<br>你是我生命中最美的遇见"
+];
+var currentBlessing=0;
+function showBlessing(n){
+  var el=document.getElementById('blessing-text');
+  el.style.opacity='0';
+  setTimeout(function(){
+    el.innerHTML=blessings[n];
+    el.style.opacity='1';
+  },500);
+}
+function nextBlessing(){
+  currentBlessing=(currentBlessing+1)%blessings.length;
+  showBlessing(currentBlessing);
+}
+setInterval(nextBlessing,8000);
+
+/* ===== 6. 页面导航 ===== */
+var currentPage=1;
+var totalPages=5;
+function updatePageNum(){
+  document.getElementById('page-num').textContent=currentPage+' / '+totalPages;
+}
+function nextPage(){
+  if(currentPage<totalPages){
+    currentPage++;
+    goToSlide(currentPage-1);
+    showBlessing(currentPage-1);
+    updatePageNum();
+  }else{
+    currentPage=1;
+    goToSlide(0);
+    showBlessing(0);
+    updatePageNum();
+  }
+}
+function prevPage(){
+  if(currentPage>1){
+    currentPage--;
+    goToSlide(currentPage-1);
+    showBlessing(currentPage-1);
+    updatePageNum();
+  }else{
+    currentPage=totalPages;
+    goToSlide(totalPages-1);
+    showBlessing(totalPages-1);
+    updatePageNum();
+  }
+}
+
+/* ===== 7. 点击爱心开始 ===== */
+var heartStart=document.getElementById('heart-start');
+var mainContent=document.getElementById('main-content');
+var leftPanel=document.getElementById('left-panel');
+var rightPanel=document.getElementById('right-panel');
+var navArea=document.getElementById('nav-area');
+var pageNum=document.getElementById('page-num');
+var signature=document.getElementById('signature');
+var bgm=document.getElementById('bgm');
+var started=false;
+
+heartStart.addEventListener('click',function(){
+  if(started)return;
+  started=true;
+
+  bgm.play().catch(function(e){console.log('播放失败:',e)});
+
+  heartStart.querySelector('svg').style.width='40px';
+  heartStart.querySelector('svg').style.height='40px';
+  heartStart.querySelector('svg').style.filter='drop-shadow(0 0 15px rgba(255,20,147,0.6))';
+  heartStart.style.cursor='default';
+
+  setTimeout(function(){
+    heartStart.style.opacity='0';
+    heartStart.style.pointerEvents='none';
+  },500);
+
+  setTimeout(function(){
+    mainContent.classList.add('active');
+  },300);
+
+  setTimeout(function(){
+    leftPanel.classList.add('show');
+  },800);
+
+  setTimeout(function(){
+    rightPanel.classList.add('show');
+  },1200);
+
+  setTimeout(function(){
+    navArea.classList.add('show');
+  },1500);
+
+  setTimeout(function(){
+    pageNum.classList.add('show');
+  },1700);
+
+  setTimeout(function(){
+    signature.classList.add('show');
+  },2000);
+
+  setTimeout(function(){
+    window.startHeartTree();
+  },500);
+});
+
+var blessingEl=document.getElementById('blessing-text');
+blessingEl.style.transition='opacity 0.5s ease';
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}
+  else if(e.key==='ArrowLeft'){prevPage()}
+});
+</script>
+</body>
+</html>
