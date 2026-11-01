@@ -84,7 +84,7 @@ body{width:100%;height:100vh;overflow:hidden;font-family:'Microsoft YaHei','Ping
   <!-- 左侧照片轮播 -->
   <div id="left-panel">
     <div id="photo-carousel">
-      <div class="photo-slide active" style="background-image:url('photos/同学效果/photo1.jpg')"></div>
+      <div class="photo-slide active" style="background-image:url('同学效果/photo1.jpg')"></div>
       <div class="photo-slide" style="background-image:url('同学效果/photo2.jpg')"></div>
       <div class="photo-slide" style="background-image:url('同学效果/photo3.jpg')"></div>
       <div class="photo-slide" style="background-image:url('同学效果/photo4.jpg')"></div>
@@ -133,6 +133,12 @@ body{width:100%;height:100vh;overflow:hidden;font-family:'Microsoft YaHei','Ping
 </audio>
 
 <script>
+  document.addEventListener('click' fuction() {
+      var audio = document.gentElementById('bgm);
+      if (audio) {
+          audio.play();
+  }
+  {, { once: true });
 /* ===== 1. 星空 ===== */
 (function(){
   var c=document.getElementById('stars');
